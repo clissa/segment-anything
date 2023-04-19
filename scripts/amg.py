@@ -11,6 +11,7 @@ from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 import argparse
 import json
 import os
+from tqdm.auto import tqdm
 from typing import Any, Dict, List
 
 parser = argparse.ArgumentParser(
@@ -52,7 +53,9 @@ parser.add_argument(
     help="The path to the SAM checkpoint to use for mask generation.",
 )
 
-parser.add_argument("--device", type=str, default="cuda", help="The device to run generation on.")
+parser.add_argument(
+    "--device", type=str, default="cuda", help="The device to run generation on."
+)
 
 parser.add_argument(
     "--convert-to-rle",
@@ -204,14 +207,16 @@ def main(args: argparse.Namespace) -> None:
         targets = [args.input]
     else:
         targets = [
-            f for f in os.listdir(args.input) if not os.path.isdir(os.path.join(args.input, f))
+            f
+            for f in os.listdir(args.input)
+            if not os.path.isdir(os.path.join(args.input, f))
         ]
         targets = [os.path.join(args.input, f) for f in targets]
 
     os.makedirs(args.output, exist_ok=True)
 
-    for t in targets:
-        print(f"Processing '{t}'...")
+    for t in tqdm(targets):
+        # print(f"Processing '{t}'...")
         image = cv2.imread(t)
         if image is None:
             print(f"Could not load '{t}' as an image, skipping...")
